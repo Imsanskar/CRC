@@ -30,8 +30,16 @@ int main(int argc, char* argv[]){
 	
 	socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
 	if (socketfd == -1){
-		perror("socket error on server side")
+		perror("socket error on server side");
 	}
+
+	int yes = 1; // throwaway optval parameter for setsockopt
+	// only for localhost testing purposes, disable SO_REUSEADDR for deployment
+	// allows you to forcibly connect to a port, for address already in use binding error
+	if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
+            perror("setsockopt");
+            exit(1); // exit if we can't set socket option? hmmm
+        }
 
 	if(bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen) == -1){
 		perror("bind");
@@ -40,19 +48,26 @@ int main(int argc, char* argv[]){
 
 	//listen
 	status = listen(socketfd, 2);
-	if(status < 0){
+	if(status == -1){
 		perror("Listen error");
+		exit(1);
 	}
-	// socklen_t addr_s
-	socklen_t length = serverinfo->ai_addrlen;
-	connect_fd = accept(socketfd, serverinfo->ai_addr, &length);
 
+	// socklen_t addr_s
+	struct sockaddr_storage client_info;
+	socklen_t length = sizeof(client_info);
+	connect_fd = accept(socketfd, (struct sockaddr*)&client_info, 
+		&length);
 	if(connect_fd < 0){
 		perror("accept error");
+		exit(1);
 	}
 
 	const char *msg = "Hello there!";
 	int len, bytes_sent;
 	len = strlen(msg);
-	bytes_sent = send(connect_fd, msg, len, 0);
+	if ((bytes_sent = send(connect_fd, msg, len, 0)) == -1){
+		perror("send error");
+		exit(1);
+	}
 }
