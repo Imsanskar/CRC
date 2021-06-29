@@ -15,8 +15,6 @@
 #define PORT "6969" // port number
 #define BACKLOG 10 // total number of backlog connection
 
-
-
 //TODO: Fix the message bug
 
 int main(int argc, char* argv[]){
@@ -31,8 +29,14 @@ int main(int argc, char* argv[]){
 	int status = getaddrinfo("127.0.0.1", "6969", &hints, &serverinfo);
 	
 	socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
+	if (socketfd == -1){
+		perror("socket error on server side")
+	}
 
-	bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen);
+	if(bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen) == -1){
+		perror("bind");
+		exit(1);
+	}
 
 	//listen
 	status = listen(socketfd, 2);
@@ -47,7 +51,7 @@ int main(int argc, char* argv[]){
 		perror("accept error");
 	}
 
-	char *msg = "Hello there!";
+	const char *msg = "Hello there!";
 	int len, bytes_sent;
 	len = strlen(msg);
 	bytes_sent = send(connect_fd, msg, len, 0);

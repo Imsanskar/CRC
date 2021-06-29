@@ -30,8 +30,9 @@ int main(int argc, char* argv[]){
 	}
 	
 	socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
-
-	//bind(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen);
+	if (socketfd == -1){
+		perror("socket error on client side")
+	}
 
 	//connect
 	status = connect(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen);
@@ -39,7 +40,7 @@ int main(int argc, char* argv[]){
 		perror("Connect Error");
 	}
 
-	char *message;
+	char message[12];
 	int bytesLength = recv(socketfd, message, 12, 0);
 	printf("%s\n", message);
 }
