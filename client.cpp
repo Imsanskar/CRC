@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -12,7 +11,11 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+// C++ specific header
+#include <iostream> // for cin, scanf is error prone
+
 #define PORT "6969" // port number
+#define BUF_SIZE 100
 
 int main(int argc, char* argv[]){
 	int socketfd, connect_fd;
@@ -20,7 +23,6 @@ int main(int argc, char* argv[]){
 
 	// INET6_ADDRSTRLEN can store both ipv4/ipv6 addresses
 	char server_addr[INET6_ADDRSTRLEN]; 
-	bool loopback_connection = true;
 
 	// maybe need to add option for port as well, or separate this into
 	// another function, TODO
@@ -47,20 +49,46 @@ int main(int argc, char* argv[]){
 	if(status != 0){
 		printf("Getaddrinfo error: %s\n", gai_strerror(status));
 	}
-	
-	socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
-	if (socketfd == -1){
-		perror("socket error on client side");
+
+	for (itr = serverinfo; itr != NULL; itr = itr->ai_next){
+		socketfd = socket(serverinfo->ai_family, serverinfo->ai_socktype, serverinfo->ai_protocol);
+		if (socketfd == -1){
+			perror("socket error on client side");
+			continue;
+		}
+
+		//connect
+		status = connect(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen);
+		if(status != 0){
+			close(socketfd);
+			perror("Connect Error");
+			continue;
+		}
+
+		break;
 	}
 
-	//connect
-	status = connect(socketfd, serverinfo->ai_addr, serverinfo->ai_addrlen);
-	if(status != 0){
-		perror("Connect Error");
+	if (itr == NULL){
+		fprintf(stderr, "connection to server failed!");
+		exit(EXIT_FAILURE);
 	}
 
+	std::string msg_to_send;
+	std::cout << "Message to send :";
+	std::getline(std::cin, msg_to_send);
+	const char* s_msg = msg_to_send.c_str();
+
+	int send_length = send(socketfd, s_msg, msg_to_send.size(), 0);
+	if (send_length == -1){
+		perror("client send message");
+		exit(EXIT_FAILURE);
+	}
+
+	// is there a workaround for receive buffer size to not be fixed?
 	char message[100];
-	int bytesLength = recv(socketfd, message, 100, 0);
-	message[bytesLength] = '\0';
+	int recv_length = recv(socketfd, message, BUF_SIZE, 0);
+	message[recv_length] = '\0';
 	printf("%s\n", message);
+
+	return 0;
 }

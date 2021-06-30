@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -12,8 +11,12 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+// C++ specific headers
+#include <iostream>
+
 #define PORT "6969" // port number
 #define BACKLOG 10 // total number of backlog connection
+#define BUF_SIZE 100
 
 int main(int argc, char* argv[]){
 	int socketfd, connect_fd;
@@ -74,9 +77,9 @@ int main(int argc, char* argv[]){
 	struct sockaddr_storage client_info;
 	socklen_t length = sizeof(client_info);
 
-	const char *msg = "Hello there!";
-	int len, bytes_sent;
-	len = strlen(msg);
+	uint8_t recv_msg[BUF_SIZE];
+	int len, bytes_sent, bytes_recv;
+	memset(recv_msg, 0, BUF_SIZE);
 
 	while (true){
 		connect_fd = accept(socketfd, (struct sockaddr*)&client_info,
@@ -86,9 +89,16 @@ int main(int argc, char* argv[]){
 			exit(EXIT_FAILURE);
 		}
 
-		if ((bytes_sent = send(connect_fd, msg, len, 0)) == -1){
+		bytes_recv = read(connect_fd, &recv_msg, BUF_SIZE);
+		if (bytes_recv == -1){
+			perror("recieve error");
+			continue;
+		}
+		recv_msg[bytes_recv] = '\0';
+		std::cout << recv_msg << std::endl;
+
+		if ((bytes_sent = send(connect_fd, &recv_msg, bytes_recv, 0)) == -1){
 			perror("send error");
-			exit(EXIT_FAILURE);
 		}
 	}
 
