@@ -13,6 +13,8 @@
 
 // C++ specific header
 #include <iostream> // for cin, scanf is error prone
+#include "crc_div.h"
+#include "utils.h"
 
 #define PORT "6969" // port number
 #define BUF_SIZE 100
@@ -77,16 +79,34 @@ int main(int argc, char* argv[]){
 	std::cout << "Message to send :";
 	std::getline(std::cin, msg_to_send);
 	const char* s_msg = msg_to_send.c_str();
+	Message send_message;
+	set_message(&send_message, s_msg);
+	char *msg;
+	msg = messageToChar(send_message,msg);
 
-	int send_length = send(socketfd, s_msg, msg_to_send.size(), 0);
+	// number to divide
+	char* divisor = "110";
+	const char* rem = crc_div(msg, divisor, strlen(msg), strlen(divisor));
+
+	std::string code(msg);
+	// // char *code = (char *)malloc(sizeof(char) * (strlen(msg) + 1));
+	// char* code = new char[strlen(msg) + 1];
+	// memcpy(code, msg, strlen(msg));
+	// printf("Message: %s %d\n", msg, strlen(msg));
+	// printf("Code:%s %d\n", code, strlen(code));
+	code = code + std::string(rem);
+
+	int send_length = send(socketfd, code.c_str(), code.size(), 0);
+
 	if (send_length == -1){
 		perror("client send message");
 		exit(EXIT_FAILURE);
 	}
 
+
 	// is there a workaround for receive buffer size to not be fixed?
 	char message[100];
-	int recv_length = recv(socketfd, message, BUF_SIZE, 0);
+	int recv_length = recv(socketfd, message, strlen(msg), 0);
 	message[recv_length] = '\0';
 	printf("%s\n", message);
 

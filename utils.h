@@ -26,6 +26,16 @@ void initialize_binary(Binary *binary, int val, int no_bits){
 		binary->value[j] = (char)(i % 2) + '0';
 	}
 }
+
+void set_binary(Binary *binary, const char* str, int no_bits){
+	binary->no_bits = no_bits;
+	binary->value = (char *)malloc(sizeof(char) * (no_bits + 1));
+	binary->value[no_bits] = '\0';
+	for(int j = no_bits - 1; j >= 0; j--){
+		binary->value[j] = str[j];
+	}
+}
+
 /*
 	Convertes binary to decimal
 */
@@ -37,6 +47,8 @@ int to_decimal(Binary binary){
 	}
 	return number;
 }
+
+
 
 /*
 	Wrapper for sending the message
@@ -101,11 +113,11 @@ Message charToMessage(char *code, int size, int no_bits){
 /*
 	Message to character pointer
 */
-void messageToChar(Message message, char *code){
+char* messageToChar(Message message, char *code){
 	code = (char *)malloc(sizeof(char) * (message.size * message.message[0].no_bits + 1));
 	code[message.size * message.message[0].no_bits] = '\0';
 	for(int i = 0; i < message.size * message.message[0].no_bits; i++){
 		code[i] = message.message[i / message.message[0].no_bits].value[i % message.message[0].no_bits];
 	}
-	print(charToMessage(code, message.size, message.message[0].no_bits));
+	return code;
 }

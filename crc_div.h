@@ -42,15 +42,15 @@ const char* pad_dividend(char dividend[], int dividend_len, int divisor_len){
 const char* crc_div(char dividend[], char divisor[], 
     int dividend_len, int divisor_len){
 
-  // pick is used to 'pick' up the next digit for division
-  int pick = divisor_len;
-  char *crc_rem = new char[divisor_len+1];
-  const char *new_dividend = pad_dividend(dividend, dividend_len, divisor_len);
+	// pick is used to 'pick' up the next digit for division
+	int pick = divisor_len;
+	char *crc_rem = new char[divisor_len+1];
+	const char *new_dividend = pad_dividend(dividend, dividend_len, divisor_len);
 
-  // copy the initial divisor length string to crc_rem from dividend
-  memcpy(crc_rem, new_dividend, divisor_len);
+	// copy the initial divisor length string to crc_rem from dividend
+	memcpy(crc_rem, new_dividend, divisor_len);
 
-  while(pick < dividend_len){
+	while(pick < dividend_len){
 
     // if 1st but is 1, xor with dividend
     if (crc_rem[0] == '1'){
@@ -86,13 +86,13 @@ const char* crc_div(char dividend[], char divisor[],
   return crc_rem;
 }
 
-int main(){
-  char dividend[] = "10111011"; 
-  char divisor[] = "1001";
-  const char* result = crc_div(dividend, divisor, 
-      sizeof(dividend)-1, sizeof(divisor)-1);
-  std::cout << result << std::endl; // only the crc remainder
+// int main(){
+//   char dividend[] = "10111011"; 
+//   char divisor[] = "1001";
+//   const char* result = crc_div(dividend, divisor, 
+//       sizeof(dividend)-1, sizeof(divisor)-1);
+//   std::cout << result << std::endl; // only the crc remainder
 
-  delete result;
-  return 0;
-}
+//   delete result;
+//   return 0;
+// }

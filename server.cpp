@@ -11,6 +11,8 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include "utils.h"
+#include "crc_div.h"
 // C++ specific headers
 #include <iostream>
 
@@ -77,7 +79,7 @@ int main(int argc, char* argv[]){
 	struct sockaddr_storage client_info;
 	socklen_t length = sizeof(client_info);
 
-	uint8_t recv_msg[BUF_SIZE];
+	char recv_msg[BUF_SIZE];
 	int len, bytes_sent, bytes_recv;
 	memset(recv_msg, 0, BUF_SIZE);
 
@@ -89,14 +91,16 @@ int main(int argc, char* argv[]){
 			exit(EXIT_FAILURE);
 		}
 
-		bytes_recv = read(connect_fd, &recv_msg, BUF_SIZE);
+		char* divisor = "110";
+		bytes_recv = recv(connect_fd, &recv_msg, 100, 0);
 		if (bytes_recv == -1){
 			perror("recieve error");
 			continue;
 		}
-		recv_msg[bytes_recv] = '\0';
+		const char* rem = crc_div(recv_msg, divisor, strlen(recv_msg), strlen(divisor));
+		printf("%s\n", rem);
+		//recv_msg[bytes_recv] = '\0';
 		std::cout << recv_msg << std::endl;
-
 		if ((bytes_sent = send(connect_fd, &recv_msg, bytes_recv, 0)) == -1){
 			perror("send error");
 		}
