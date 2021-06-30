@@ -18,6 +18,7 @@ struct Binary{
 */
 void initialize_binary(Binary *binary, int val, int no_bits){
 	const int size = 8;
+	binary->no_bits = no_bits;
 	binary->value = (char *)malloc(sizeof(char) * (no_bits + 1));
 	memset(binary->value, 0, size);
 	binary->value[size - 1] = '\0';
@@ -82,4 +83,29 @@ void print(Message message){
 		printf("%s ", message.message[i].value);
 	}
 	printf("\n");
+}
+
+/*
+	returns a message from string to size
+*/
+Message charToMessage(char *code, int size, int no_bits){
+	Message message;
+	initialize_message(&message, size);
+	code[message.size * message.message[0].no_bits] = '\0';
+	for(int i = 0; i < message.size * message.message[0].no_bits; i++){
+		message.message[i / message.message[0].no_bits].value[i % message.message[0].no_bits] = code[i];
+	}
+	return message;
+}
+
+/*
+	Message to character pointer
+*/
+void messageToChar(Message message, char *code){
+	code = (char *)malloc(sizeof(char) * (message.size * message.message[0].no_bits + 1));
+	code[message.size * message.message[0].no_bits] = '\0';
+	for(int i = 0; i < message.size * message.message[0].no_bits; i++){
+		code[i] = message.message[i / message.message[0].no_bits].value[i % message.message[0].no_bits];
+	}
+	print(charToMessage(code, message.size, message.message[0].no_bits));
 }
