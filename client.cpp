@@ -13,7 +13,6 @@
 #include <signal.h>
 
 #define PORT "6969" // port number
-#define BACKLOG 20 // total number of backlog connection
 
 int main(int argc, char* argv[]){
 	int socketfd, connect_fd;
@@ -23,8 +22,7 @@ int main(int argc, char* argv[]){
 	char server_addr[INET6_ADDRSTRLEN]; 
 	bool loopback_connection = true;
 
-	// take command line argument for server address
-	// maybe need to add option for port as well, or separate this into 
+	// maybe need to add option for port as well, or separate this into
 	// another function, TODO
 	switch(argc){
 		case 1:
@@ -45,7 +43,7 @@ int main(int argc, char* argv[]){
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	int status = getaddrinfo(server_addr, "6969", &hints, &serverinfo);
+	int status = getaddrinfo(server_addr, PORT, &hints, &serverinfo);
 	if(status != 0){
 		printf("Getaddrinfo error: %s\n", gai_strerror(status));
 	}
