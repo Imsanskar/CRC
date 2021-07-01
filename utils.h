@@ -92,7 +92,7 @@ void set_message(Message *message, const char *str){
 
 void print(Message message){
 	for(int i = 0; i < message.size; i++){
-		printf("%s ", message.message[i].value);
+		printf("%c", to_decimal(message.message[i]));
 	}
 	printf("\n");
 }
@@ -120,4 +120,13 @@ char* messageToChar(Message message, char *code){
 		code[i] = message.message[i / message.message[0].no_bits].value[i % message.message[0].no_bits];
 	}
 	return code;
+}
+
+char* removeRemainderCRC(char *codeword, char *dataword, int remLength){
+	dataword = (char *)malloc(sizeof(char) * (strlen(codeword) - remLength) + 1);
+	dataword[strlen(codeword) - remLength] = '\0';
+	for(int i = strlen(codeword) - remLength - 1; i >= 0; i--){
+		dataword[i] = codeword[i];
+	}
+	return dataword;
 }

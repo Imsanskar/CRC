@@ -101,11 +101,16 @@ int main(int argc, char* argv[]){
 			perror("recieve error");
 			continue;
 		}
-
 		const char* rem = crc_div(recv_msg, divisor, strlen(recv_msg), strlen(divisor));
 		std::cout << "Received encoded message : " << recv_msg << std::endl;
 		std::cout << "CRC division remainder on server side : " << rem << std::endl;
-
+		char *dataword;
+		dataword = removeRemainderCRC(recv_msg, dataword, 3);
+		printf("Message: %s\n", dataword);
+		Message message = charToMessage(dataword, strlen(dataword) / 8, 8);
+		// set_message(&message, dataword);
+		// printf("Message size: %d\n", message.size);
+		print(message);
 		if ((bytes_sent = send(connect_fd, &recv_msg, bytes_recv, 0)) == -1){
 			perror("send error");
 		}
