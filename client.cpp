@@ -17,7 +17,7 @@
 #include "utils.h"
 
 #define PORT "6969" // port number
-#define BUF_SIZE 100
+#define BUF_SIZE 512
 
 int main(int argc, char* argv[]){
 	int socketfd, connect_fd;
@@ -75,40 +75,43 @@ int main(int argc, char* argv[]){
 		exit(EXIT_FAILURE);
 	}
 
+	// msg_to_send will point to the ascii input
 	std::string msg_to_send;
 	std::cout << "Message to send :";
 	std::getline(std::cin, msg_to_send);
-	const char* s_msg = msg_to_send.c_str();
+
+	// send_message will include binary representation of msg_to_send
 	Message send_message;
+	const char* s_msg = msg_to_send.c_str();
 	set_message(&send_message, s_msg);
-	char *msg;
-	msg = messageToChar(send_message,msg);
+	char* msg = messageToChar(send_message, msg);
+	std::cout << msg_to_send << " in binary : " << msg << std::endl;
 
-	// number to divide
-	char* divisor = "110";
+	// crc divisor, must be same on the server and client side
+	char divisor[] = "1010";
+	std::cout << "Dvisior for CRC division : " << divisor << std::endl;
+
 	const char* rem = crc_div(msg, divisor, strlen(msg), strlen(divisor));
+	std::cout << "CRC division remainder on client side : " << rem << std::endl;
 
+	// concatenate crc remainder to original message
 	std::string code(msg);
-	// // char *code = (char *)malloc(sizeof(char) * (strlen(msg) + 1));
-	// char* code = new char[strlen(msg) + 1];
-	// memcpy(code, msg, strlen(msg));
-	// printf("Message: %s %d\n", msg, strlen(msg));
-	// printf("Code:%s %d\n", code, strlen(code));
 	code = code + std::string(rem);
+	std::cout << "CRC encoded message : " << code << std::endl;
 
+	// send crc encoded message
 	int send_length = send(socketfd, code.c_str(), code.size(), 0);
-
 	if (send_length == -1){
 		perror("client send message");
 		exit(EXIT_FAILURE);
 	}
 
-
-	// is there a workaround for receive buffer size to not be fixed?
-	char message[100];
-	int recv_length = recv(socketfd, message, strlen(msg), 0);
+	// receive encoded message from server
+	char message[BUF_SIZE];
+	int recv_length = recv(socketfd, message, BUF_SIZE, 0);
 	message[recv_length] = '\0';
-	printf("%s\n", message);
+	printf("Echoed message from server : %s\n", message);
 
+	delete rem;
 	return 0;
 }

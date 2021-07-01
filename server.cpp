@@ -18,7 +18,7 @@
 
 #define PORT "6969" // port number
 #define BACKLOG 10 // total number of backlog connection
-#define BUF_SIZE 100
+#define BUF_SIZE 512
 
 int main(int argc, char* argv[]){
 	int socketfd, connect_fd;
@@ -79,6 +79,10 @@ int main(int argc, char* argv[]){
 	struct sockaddr_storage client_info;
 	socklen_t length = sizeof(client_info);
 
+	// crc divisor, must be same on the server and the client side
+	char divisor[] = "1010";
+	std::cout << "Dvisior for CRC division : " << divisor << std::endl;
+
 	char recv_msg[BUF_SIZE];
 	int len, bytes_sent, bytes_recv;
 	memset(recv_msg, 0, BUF_SIZE);
@@ -91,19 +95,22 @@ int main(int argc, char* argv[]){
 			exit(EXIT_FAILURE);
 		}
 
-		char* divisor = "110";
-		bytes_recv = recv(connect_fd, &recv_msg, 100, 0);
+		// recieve encoded message from client
+		bytes_recv = recv(connect_fd, &recv_msg, BUF_SIZE, 0);
 		if (bytes_recv == -1){
 			perror("recieve error");
 			continue;
 		}
+
 		const char* rem = crc_div(recv_msg, divisor, strlen(recv_msg), strlen(divisor));
-		printf("%s\n", rem);
-		//recv_msg[bytes_recv] = '\0';
-		std::cout << recv_msg << std::endl;
+		std::cout << "Received encoded message : " << recv_msg << std::endl;
+		std::cout << "CRC division remainder on server side : " << rem << std::endl;
+
 		if ((bytes_sent = send(connect_fd, &recv_msg, bytes_recv, 0)) == -1){
 			perror("send error");
 		}
+
+		delete rem;
 	}
 
 	return 0;
