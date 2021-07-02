@@ -7,7 +7,7 @@
 CC=g++
 
 default: server client
-	echo "Server and client have been built!"
+	@echo "Server and client have been built!"
 
 server: server.cpp
 	$(CC) $^ -o $@
