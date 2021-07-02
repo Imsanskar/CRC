@@ -4,15 +4,13 @@
 #include <sys/socket.h>
 #include <stdint.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
-#include <signal.h>
 
 #include "utils.h"
 #include "crc_div.h"
+
 // C++ specific headers
 #include <iostream>
 
